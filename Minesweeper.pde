@@ -13,8 +13,7 @@ void setup ()
     
     //your code to initialize buttons goes here
     
-    
-    
+   
     setMines();
 }
 public void setMines()
