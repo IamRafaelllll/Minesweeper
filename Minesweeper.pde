@@ -1,17 +1,17 @@
 import de.bezier.guido.*;
-private MSButton[][] buttons; 
 public static final int NUM_COLS = 15; 
 public static final int NUM_ROWS = 13; 
 public static final int BUTTON_WIDTH = 20;
 public static final int BUTTON_HEIGHT = 20;
+public boolean bombsSet = false;
+public boolean gameOver = false;
 public static final int NUM_BOMBS = (int)((NUM_ROWS*NUM_COLS)*0.1);
+private MSButton[][] buttons; 
 private ArrayList <MSButton> bombs; 
-public boolean setBombs = false;
-public boolean GO = false;
 void setup(){
   size(300, 380);
   textAlign(CENTER, CENTER);
-  Interactive.make(this);
+  Interactive.make( this );
   buttons = new MSButton [NUM_ROWS][NUM_COLS];
   for (int r = 0; r < NUM_ROWS; r++){
     for (int c = 0; c < NUM_COLS; c++){
@@ -20,12 +20,12 @@ void setup(){
   }
   bombs = new ArrayList <MSButton>();
 }
-public void setBombs(int numBombs, int rRows, int cCols){
+public void setBombs(int numBombs, int rr, int cc){
   for (int i = 0; i < numBombs; i++){
-    int bRows = (int)(Math.random()*NUM_ROWS);
+    int tRow = (int)(Math.random()*NUM_ROWS);
     int tCol = (int)(Math.random()*NUM_COLS);
-    if (bombs.contains(buttons[bRows][tCol]) == false && bRows != rRows && tCol != cCols) {
-      bombs.add(buttons[bRows][tCol]);
+    if (bombs.contains(buttons[tRow][tCol]) == false && tRow != rr && tCol != cc) {
+      bombs.add(buttons[tRow][tCol]);
     }
     else { 
       i--;
@@ -34,30 +34,30 @@ public void setBombs(int numBombs, int rRows, int cCols){
 }
 public void keyPressed(){
   if (key == ' '){
-    setBombs = false;
-    GO = false;
+    bombsSet = false;
+    gameOver = false;
     for (int i = 0; i < NUM_BOMBS; i++)
       if (bombs.size() > 0)
         bombs.remove(0);
-    for (int rRows = 0; rRows < NUM_ROWS; rRows++){
-      for (int cCols = 0; cCols < NUM_COLS; cCols++){
-        buttons[rRows][cCols].setClicked(false);
-        buttons[rRows][cCols].setMarked(false);
-        buttons[rRows][cCols].setChart("");
+    for (int rr = 0; rr < NUM_ROWS; rr++){
+      for (int cc = 0; cc < NUM_COLS; cc++){
+        buttons[rr][cc].setClicked(false);
+        buttons[rr][cc].setMarked(false);
+        buttons[rr][cc].setLabel("");
       }
     }
   }
   if (key=='i' || key=='I'){
-      setBombs = false;
-    GO = false;
+      bombsSet = false;
+    gameOver = false;
     for (int i = 0; i < NUM_BOMBS; i++)
       if (bombs.size() > 0)
         bombs.remove(0);
-    for (int rRows = 0; rRows < NUM_ROWS; rRows++){
-      for (int cCols = 0; cCols < NUM_COLS; cCols++){
-        buttons[rRows][cCols].setClicked(false);
-        buttons[rRows][cCols].setMarked(false);
-        buttons[rRows][cCols].setChart("");
+    for (int rr = 0; rr < NUM_ROWS; rr++){
+      for (int cc = 0; cc < NUM_COLS; cc++){
+        buttons[rr][cc].setClicked(false);
+        buttons[rr][cc].setMarked(false);
+        buttons[rr][cc].setLabel("");
       }
     }
   }
@@ -74,15 +74,15 @@ public void draw (){
    }
 }
 public boolean isWon(){
-  int countMarked = 0;
-  int counted = 0;
+  int countM = 0;
+  int countC = 0;
   for (int r = 0; r < NUM_ROWS; r++){
     for (int c = 0; c < NUM_COLS; c++){
       if (buttons[r][c].isMarked()) {
-        countMarked++;
+        countM++;
       } 
       else if (buttons[r][c].isClicked()) {
-        counted++;
+        countC++;
       }
     }
   }
@@ -92,7 +92,7 @@ public boolean isWon(){
       countB++;
     }
   }
-  if ((countB == NUM_BOMBS && countMarked + counted == NUM_ROWS*NUM_COLS && countB == countMarked) || NUM_BOMBS == (NUM_ROWS*NUM_COLS)-counted) {
+  if ((countB == NUM_BOMBS && countM + countC == NUM_ROWS*NUM_COLS && countB == countM) || NUM_BOMBS == (NUM_ROWS*NUM_COLS)-countC) {
     return true;
   }
   return false;
@@ -103,47 +103,48 @@ public void displayLosingMessage(){
     (bombs.get(i)).setClicked(true);
     (bombs.get(i)).setMarked(false);
   }
+  String loser = "You lose!";
 }
 
 public void displayWinningMessage(){
-  for (int j = 0; j < bombs.size(); j++)
-    (bombs.get(j)).setMarked(true);
+  for (int a = 0; a < bombs.size(); a++)
+    (bombs.get(a)).setMarked(true);
 }
 public class MSButton {
   private int r, c;
   private float x, y, width, height;
   private boolean clicked, marked;
-  private String charted;
-  public MSButton ( int rRows, int cCols ){
+  private String label;
+  public MSButton ( int rr, int cc ){
     width = BUTTON_WIDTH;
     height = BUTTON_HEIGHT;
-    r = rRows;
-    c = cCols; 
+    r = rr;
+    c = cc; 
     x = c*width;
     y = r*height;
-    charted = "";
+    label = "";
     marked = clicked = false;
     Interactive.add( this ); // register it with the manager
-  }
-   public void setMarked(boolean nMark){
-    marked = nMark;
   }
   public boolean isMarked(){
     return marked;
   }
-   public void setClicked(boolean nClick){
-    clicked = nClick;
+  public void setMarked(boolean nMark){
+    marked = nMark;
   }
   public boolean isClicked(){
     return clicked;
   }
+  public void setClicked(boolean nClick){
+    clicked = nClick;
+  }
   public void mousePressed(){
-    if (!setBombs){
-      setBombs = true;
+    if (!bombsSet){
+      bombsSet = true;
       setBombs(NUM_BOMBS, r, c);
     }
-    if (!isWon() && !GO) { 
-      if (mouseButton == RIGHT && charted.equals("")){
+    if (!isWon() && !gameOver) { 
+      if (mouseButton == RIGHT && label.equals("")){
         if (bombs.contains(this)) {
           clicked = false;
           marked = !marked;
@@ -154,11 +155,11 @@ public class MSButton {
         }
       } 
       else if (mouseButton == CENTER){
-        if (countMarks(r, c) == parseInt(charted) && clicked){
-          for (int rRows = -1; rRows < 2; rRows++){
-            for (int cCols = -1; cCols < 2; cCols++){
-              if (isValid(r+rRows, c+cCols)){
-                buttons[r+rRows][c+cCols].mouseSurround();
+        if (countMarks(r, c) == parseInt(label) && clicked){
+          for (int rr = -1; rr < 2; rr++){
+            for (int cc = -1; cc < 2; cc++){
+              if (isValid(r+rr, c+cc)){
+                buttons[r+rr][c+cc].mouseSurround();
               }
             }
           }
@@ -167,17 +168,17 @@ public class MSButton {
       else if (!marked){
         clicked = true;
         if (bombs.contains(this)) {
-          GO = true;
+          gameOver = true;
           displayLosingMessage();
         }
         else if (countBombs(r, c) > 0) { 
-          setChart("" + countBombs(r, c));
+          setLabel("" + countBombs(r, c));
         } 
         else {
-          for (int rRows = -1; rRows < 2; rRows++){
-            for (int cCols = -1; cCols < 2; cCols++){
-              if (isValid(r+rRows, c+cCols) && buttons[r+rRows][c+cCols].isClicked() == false){
-                buttons[r+rRows][c+cCols].mousePressed();
+          for (int rr = -1; rr < 2; rr++){
+            for (int cc = -1; cc < 2; cc++){
+              if (isValid(r+rr, c+cc) && buttons[r+rr][c+cc].isClicked() == false){
+                buttons[r+rr][c+cc].mousePressed();
               }
             }
           }
@@ -192,13 +193,13 @@ public class MSButton {
         displayLosingMessage();
       } 
       else if (countBombs(r, c) > 0) { 
-        setChart("" + countBombs(r, c));
+        setLabel("" + countBombs(r, c));
       } 
       else {
-        for (int rRows = -1; rRows < 2; rRows++){
-          for (int cCols = -1; cCols < 2; cCols++){
-            if (isValid(r+rRows, c+cCols) && buttons[r+rRows][c+cCols].isClicked() == false){
-              buttons[r+rRows][c+cCols].mouseSurround();
+        for (int rr = -1; rr < 2; rr++){
+          for (int cc = -1; cc < 2; cc++){
+            if (isValid(r+rr, c+cc) && buttons[r+rr][c+cc].isClicked() == false){
+              buttons[r+rr][c+cc].mouseSurround();
             }
           }
         }
@@ -215,21 +216,19 @@ public class MSButton {
       fill(55);
       rect(x, y, width, height);     
     }
-    else if (clicked && bombs.contains(this)) 
+    else if ( clicked && bombs.contains(this)) 
       fill(255, 0, 0);
-        else if (clicked){
-          fill(225);
-        }
-      else{
+    else if (clicked)
+      fill(225);
+    else
     fill(100);
-      }
     stroke(r,g,b);
     rect(x, y, width, height);
     fill(0);
-    text(charted, x+width/2, y+height/2);
+    text(label, x+width/2, y+height/2);
   }
-  public void setChart(String newLabel){
-    charted = newLabel;
+  public void setLabel(String newLabel){
+    label = newLabel;
   }
   public boolean isValid(int r, int c){
     if (r >= 0 && r < NUM_ROWS && c >= 0 && c < NUM_COLS) { 
@@ -239,9 +238,9 @@ public class MSButton {
   }
   public int countBombs(int row, int col){
     int numBombs = 0;
-    for (int rRows = -1; rRows < 2; rRows++) {
-      for (int cCols = -1; cCols < 2; cCols++){
-        if (isValid(row+rRows, col+cCols) && bombs.contains(buttons[row+rRows][col+cCols])){
+    for (int rr = -1; rr < 2; rr++) {
+      for (int cc = -1; cc < 2; cc++){
+        if (isValid(row+rr, col+cc) && bombs.contains(buttons[row+rr][col+cc])){
           numBombs++;
         }
       }
@@ -249,14 +248,14 @@ public class MSButton {
     return numBombs;
   }
   public int countMarks(int row, int col){
-    int markNum = 0;
-    for (int rRows = -1; rRows < 2; rRows++){
-      for (int cCols = -1; cCols < 2; cCols++){
-        if (isValid(row+rRows, col+cCols) && buttons[row+rRows][col+cCols].isMarked()){
-          markNum++;
+    int numMarks = 0;
+    for (int rr = -1; rr < 2; rr++){
+      for (int cc = -1; cc < 2; cc++){
+        if (isValid(row+rr, col+cc) && buttons[row+rr][col+cc].isMarked()){
+          numMarks++;
         }
       }
     }
-    return markNum;
+    return numMarks;
   }
 }
